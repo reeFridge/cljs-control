@@ -1,0 +1,181 @@
+body {
+    font-family: "Monospace";
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-container {
+    margin: 0 auto;
+}
+
+.menu-container {
+    display: inline-block;
+    float: left;
+    width: 100px;
+    margin-left: 50px;
+    margin-right: -50px;
+}
+
+.menu-container div {
+    height: 8px;
+    background-color: white;
+    margin-bottom: 23px;
+}
+
+.header {
+    text-align: center;
+    padding: 50px 0;
+    font-size: 60px;
+    background-color: rgba(90, 200, 245, 0.95);
+    color: rgba(255, 255, 255, 1.0);
+}
+
+.header .arrow-left {
+    margin-top: -15px;
+    margin-left: 50px;
+    margin-right: -50px;
+}
+
+.func, .timer {
+    padding: 50px 50px;
+    margin: 0;
+}
+
+.func.item, .timer.item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.func.detail {
+    background: none;
+}
+
+.func.item:active {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.func.item:hover {
+    cursor: pointer;
+}
+
+.icon {
+    height: 100px;
+    width: 100px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.icon.left {
+    float: left;
+}
+
+.icon.right {
+    float: right;
+    margin-left: 20px;
+}
+
+.func .title, .timer .title {
+    font-size: 50px;
+    display: inline-block;
+    float: none;
+    padding: 25px 0;
+    margin-left: 50px;
+}
+
+.icon.light {
+    background-image: url("/img/light.png");
+}
+
+.icon.water {
+    background-image: url("/img/water.png");
+}
+
+.icon.control {
+    background-image: url("/img/control.png");
+}
+
+.icon.arrow-left {
+    background-image: url("/img/arrow-left.svg");
+}
+
+.icon.timer_ {
+    background-image: url("/img/timer.png");
+}
+
+.icon.cycle {
+    background-image: url("/img/cycle.png");
+}
+
+.tab .icon {
+    margin: 0 auto;
+    display: block;
+}
+
+.timer-info-container {
+    display: inline-block;
+    float: none;
+    width: 500px;
+    text-align: center;
+}
+
+.timer-info-container .time {
+    font-size: 50px;
+}
+
+.timer-info-container .action {
+    font-size: 30px;
+}
+
+.tab {
+    padding: 25px 0;
+    display: inline-block;
+    width: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.tab .label {
+    font-size: 30px;
+    text-align: center;
+}
+
+.checkbox {
+    display: inline-block;
+    border: 5px solid rgba(90, 200, 245, 0.95);
+    border-radius: 125px;
+    float: right;
+    width: 97px;
+    height: 97px;
+}
+
+.checkbox .text {
+    font-size: 40px;
+    display: inline-block;
+    width: 97px;
+    height: 40px;
+    margin-top: 27px;
+    text-align: center;
+}
+
+.checkbox.on .text {
+    color: white;
+}
+
+.checkbox.off .text {
+    color: rgba(90, 200, 245, 0.95);
+}
+
+.checkbox.on {
+    background-color: rgba(90, 200, 245, 0.95);
+}
+
+.checkbox.off {
+    background-color: rgba(255, 255, 255, 0.2);
+}
