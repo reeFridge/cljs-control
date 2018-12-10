@@ -16,14 +16,26 @@
    {} funcs))
 
 (defn timer [name state func-id action time]
-  {:id (join "#" [func-id name])
+  {:id (join "#" [func-id :timer name])
    :state state
    :time time
    :name name
    :func-id func-id
    :action action
    :delay nil
-   :cycle nil})
+   :cycle nil
+   :type :timer})
+
+(defn cycle_ [name state func-id action time]
+  {:id (join "#" [func-id :cycle name])
+   :state state
+   :time time
+   :name name
+   :func-id func-id
+   :action action
+   :delay nil
+   :cycle nil
+   :type :cycle})
 
 (def default-db
   {:active-panel :main
@@ -38,6 +50,11 @@
                            (time/today-at 12 30))
                     (timer "timer2"
                            true
+                           "switch#water"
+                           :off
+                           (time/today-at 14 0))
+                    (cycle_ "cycle1"
+                           false
                            "switch#light"
                            :off
-                           (time/today-at 14 0))])})
+                           (time/today-at 16 30))])})

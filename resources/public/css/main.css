@@ -1,5 +1,5 @@
 body {
-    font-family: "Monospace";
+    font-family: monospace;
     margin: 0;
     background-color: rgba(0, 0, 0, 0.1);
 }
@@ -44,6 +44,7 @@ ul {
 
 .func, .timer {
     padding: 50px 50px;
+    height: 100px;
     margin: 0;
 }
 
@@ -84,9 +85,16 @@ ul {
 .func .title, .timer .title {
     font-size: 50px;
     display: inline-block;
-    float: none;
-    padding: 25px 0;
+    padding: 20px 0;
     margin-left: 50px;
+}
+
+.func .title {
+    float: none;
+}
+
+.timer .title {
+    float: left;
 }
 
 .icon.light {
@@ -137,8 +145,12 @@ ul {
     padding: 25px 0;
     display: inline-block;
     width: 50%;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.4);
     border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.tab.active {
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .tab .label {

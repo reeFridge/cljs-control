@@ -4,7 +4,8 @@
    [dashboard.subs :as subs]
    [dashboard.events :as events]
    [cljs-time.core :as time]
-   [cljs-time.format :as format]))
+   [cljs-time.format :as format]
+   [reagent.core :as r]))
 
 (defn switch [state click-handler]
   [:div.checkbox
@@ -49,32 +50,44 @@
        [:div.action "action: " action]]
       [switch state]]]))
 
-(defn timer-list []
-  (let [timers @(re-frame/subscribe [::subs/timers])]
-    [:div
-     [:ul
-      (for [timer (vals timers)]
-        ^{:key (:id timer)} [timer-item timer])]]))
+(defn timer-list [timers]
+  [:div
+   [:ul
+    (for [timer timers]
+      ^{:key (:id timer)} [timer-item timer])]])
+
+(defn tabs []
+  (let [active-tab (r/atom :timer)]
+    (fn [contents]
+      [:div.tabs-container
+       [:div.tab
+        {:on-click #(reset! active-tab :timer)
+         :class (when (= :timer @active-tab) "active")}
+        [:div.icon.timer_]
+        [:div.label "Timer"]]
+       [:div.tab
+        {:on-click #(reset! active-tab :cycle)
+         :class (when (= :cycle @active-tab) "active")}
+        [:div.icon.cycle]
+        [:div.label "Cycle"]]
+       (get contents @active-tab)])))
 
 (defn func-control-panel []
-  (let [timers (re-frame/subscribe [::subs/timers])]
+  (let [timers (vals @(re-frame/subscribe [::subs/timers]))]
     (fn [{:keys [name state id]}]
-      [:div.main-container
-       [:div.header
-        [:div.icon.left.arrow-left
-         {:on-click #(re-frame/dispatch [::events/set-active-panel :main])}]
-        "Control"]
-       [:div.func.detail
-        [:div.icon.left {:class name}] [:div.title name]
-        [switch state #(re-frame/dispatch [::events/toggle-switch id])]]
-       [:div.tabs-container
-        [:div.tab
-         [:div.icon.timer_]
-         [:div.label "Timer"]]
-        [:div.tab
-         [:div.icon.cycle]
-         [:div.label "Cycle"]]]
-       (when (seq @timers) [timer-list])])))
+      (let [func-timers (filter (fn [{:keys [func-id]}] (= func-id id)) timers)]
+        [:div.main-container
+         [:div.header
+          [:div.icon.left.arrow-left
+           {:on-click #(re-frame/dispatch [::events/set-active-panel :main])}]
+          "Control"]
+         [:div.func.detail
+          [:div.icon.left {:class name}] [:div.title name]
+          [switch state #(re-frame/dispatch [::events/toggle-switch id])]]
+         (let [timers (filter (fn [{:keys [type]}] (= type :timer)) func-timers)
+               cycles (filter (fn [{:keys [type]}] (= type :cycle)) func-timers)]
+           [tabs {:timer (when (seq timers) [timer-list timers])
+                  :cycle (when (seq cycles) [timer-list cycles])}])]))))
 
 (defn app []
   (let [active (re-frame/subscribe [::subs/active-panel])
