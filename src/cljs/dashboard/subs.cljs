@@ -5,7 +5,7 @@
 (re-frame/reg-sub
  ::device-name
  (fn [db]
-   (:device-name db)))
+   (:name (get (:devices db) (:active-device db)))))
 
 (re-frame/reg-sub
  ::funcs
@@ -13,9 +13,24 @@
    (:funcs db)))
 
 (re-frame/reg-sub
- ::timers
+  ::devices
+  (fn [db]
+    (:devices db)))
+
+(re-frame/reg-sub
+ ::events
+ (fn [db [_ id]]
+   (filter (fn [{:keys [func-id]}] (= func-id id)) (vals (:events db)))))
+
+(re-frame/reg-sub
+ ::events-map
  (fn [db]
-   (:timers db)))
+   (:events db)))
+
+(re-frame/reg-sub
+ ::active-event
+ (fn [db]
+   (:active-event db)))
 
 (re-frame/reg-sub
  ::active-func
@@ -23,6 +38,16 @@
    (:active-func db)))
 
 (re-frame/reg-sub
+  ::active-device
+  (fn [db _]
+    (:active-device db)))
+
+(re-frame/reg-sub
  ::active-panel
  (fn [db _]
    (:active-panel db)))
+
+(re-frame/reg-sub
+  ::loading
+  (fn [db _]
+    (:loading db)))

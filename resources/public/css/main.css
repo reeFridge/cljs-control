@@ -1,5 +1,16 @@
+@font-face {
+    font-family: 'PF DinDisplay Pro';
+    src: url('/fonts/PFDinDisplayPro-Thin.eot');
+    src: local('/fonts/PFDinDisplayPro-Thin'),
+         url('/fonts/PFDinDisplayPro-Thin.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/PFDinDisplayPro-Thin.woff') format('woff'),
+         url('/fonts/PFDinDisplayPro-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+
 body {
-    font-family: monospace;
+    font-family: 'PF DinDisplay Pro';
     margin: 0;
     background-color: rgba(0, 0, 0, 0.1);
 }
@@ -42,15 +53,21 @@ ul {
     margin-right: -50px;
 }
 
-.func, .timer {
+.func, .timer, .device {
     padding: 50px 50px;
     height: 100px;
     margin: 0;
 }
 
-.func.item, .timer.item {
+.func.item, .timer.item, .time-detail, .device.item {
     background-color: rgba(255, 255, 255, 0.8);
     border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.time-detail {
+    font-size: 120px;
+    text-align: center;
+    padding: 20px 0;
 }
 
 .func.detail {
@@ -82,7 +99,7 @@ ul {
     margin-left: 20px;
 }
 
-.func .title, .timer .title {
+.func .title, .timer .title, .device .title {
     font-size: 50px;
     display: inline-block;
     padding: 20px 0;
@@ -95,6 +112,43 @@ ul {
 
 .timer .title {
     float: left;
+    width: 250px;
+    text-align: center;
+    height: 50px;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.button {
+    text-align: center;
+    font-size: 50px;
+    color: white;
+    margin: 20px;
+    padding: 20px;
+    background-color: rgba(90, 200, 245, 0.95);
+    border-radius: 70px;
+}
+
+.button.green {
+    background-color: rgba(90, 210, 90, 0.95);
+}
+
+.form {
+    padding: 0 20px;
+}
+
+input {
+    font-family: 'PF DinDisplay Pro';
+    display: block;
+    text-align: center;
+    font-size: 50px;
+    margin: 20px 0;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+    height: 100px;
 }
 
 .icon.light {
@@ -102,11 +156,15 @@ ul {
 }
 
 .icon.water {
-    background-image: url("/img/water.png");
+    background-image: url("/img/bubbles.png");
 }
 
 .icon.control {
     background-image: url("/img/control.png");
+}
+
+.icon.aeration {
+    background-image: url("/img/bubbles.png");
 }
 
 .icon.arrow-left {
@@ -138,7 +196,7 @@ ul {
 }
 
 .timer-info-container .action {
-    font-size: 30px;
+    font-size: 35px;
 }
 
 .tab {
@@ -172,7 +230,7 @@ ul {
     display: inline-block;
     width: 97px;
     height: 40px;
-    margin-top: 27px;
+    margin-top: 25px;
     text-align: center;
 }
 
@@ -190,4 +248,42 @@ ul {
 
 .checkbox.off {
     background-color: rgba(255, 255, 255, 0.2);
+}
+
+.load-stub {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.load-stub .content {
+    flex: 1 0 auto;
+}
+
+.progress {
+  width: 100%;
+  height: 50px;
+  border-radius: 3px;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      #2980b9,
+      #2980b9 11px,
+      #eee 10px,
+      #eee 20px /* determines size */
+    );
+  background-size: 28px 28px;
+  animation: move .5s linear infinite;
+}
+
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
 }
