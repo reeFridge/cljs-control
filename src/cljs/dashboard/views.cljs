@@ -39,7 +39,9 @@
         funcs (re-frame/subscribe [::subs/funcs])]
     [:div.main-container
      [:div.header [menu #(re-frame/dispatch [::events/set-active-panel :devices])] @device-name]
-     (when (seq @funcs) [func-list])]))
+     (when (seq @funcs) [func-list])
+     [:div.footer
+      [:div.button.red "Удалить устройство"]]]))
 
 (defn timer-item []
   (fn [{:keys [name state id time action type weekset]}]
@@ -77,9 +79,10 @@
         [:div.icon.cycle]
         [:div.label "Цикл"]]
        (get contents @active-tab)
-       [:div.button {:on-click (fn []
-                                 (re-frame/dispatch-sync [::events/set-active-event nil])
-                                 (re-frame/dispatch [::events/set-active-panel :event]))} "+"]])))
+       [:div.footer
+        [:div.button {:on-click (fn []
+                                  (re-frame/dispatch-sync [::events/set-active-event nil])
+                                  (re-frame/dispatch [::events/set-active-panel :event]))} "+"]]])))
 
 (defn func-control-panel []
   (fn [{:keys [name state id class]}]
@@ -108,10 +111,11 @@
                        :value @email :on-change #(reset! email (-> % .-target .-value))}]
         [:input.password {:type  "password" :placeholder "Пароль"
                           :value @password :on-change #(reset! password (-> % .-target .-value))}]]
-       [:div.button {:on-click #(re-frame/dispatch [::events/request-token {:email @email :password @password}])}
-        "Вход"]
-       [:div.button.green {:on-click #(re-frame/dispatch [::events/set-active-panel :register])}
-        "Регистрация"]])))
+       [:div.footer
+        [:div.button {:on-click #(re-frame/dispatch [::events/request-token {:email @email :password @password}])}
+         "Вход"]
+        [:div.button.green {:on-click #(re-frame/dispatch [::events/set-active-panel :register])}
+         "Регистрация"]]])))
 
 (defn register-panel []
   [:div.main-container
@@ -124,7 +128,8 @@
     [:input.email {:type "text" :placeholder "Email"}]
     [:input.password {:type "password" :placeholder "Пароль"}]
     [:input.password {:type "password" :placeholder "Повторите пароль"}]]
-   [:div.button "Отправить"]])
+   [:div.footer
+    [:div.button "Отправить"]]])
 
 (defn device-item []
   (fn [{:keys [name id]}]
@@ -149,7 +154,8 @@
     [:div.main-container
      [:div.header "Мои устройства"]
      [devices-list (vals devices)]
-     [:div.button "+"]]))
+     [:div.footer
+      [:div.button "+"]]]))
 
 (defn event-panel []
   (fn [{:keys [type name state time id]}]
@@ -177,9 +183,9 @@
         loading (re-frame/subscribe [::subs/loading])]
     (fn []
       [:div
-       (when @loading [:div.wrapper.load-stub
-                      [:div.content]
-                      [:div.progress]])
+       ;(when @loading [:div.wrapper.load-stub
+       ;                [:div.content]
+       ;                [:div.progress]])
        (condp = @active
          :login [login-panel]
          :register [register-panel]

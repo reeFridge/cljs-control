@@ -121,8 +121,8 @@
     (println "message-arrived: " message)
     (let [pin-value {:light (get (:result message) (keyword (str "ipin" (:light pin-type))))
                      :water (get (:result message) (keyword (str "ipin" (:water pin-type))))}]
-      (println pin-value)
       (cond
+        ; Config.Get
         ;(:gpio_switch (:result message)) (let [pins (:vals (js->clj
         ;                                                     (.parse js/JSON (str "{\"vals\":" (:pins (:gpio_switch (:result message))) "}"))
         ;                                                     :keywordize-keys true))
@@ -134,6 +134,7 @@
         ;                                                            (condp = id
         ;                                                              (:light pin-type) (switch :light id "Свет" false)
         ;                                                              (:water pin-type) (switch :water id "Полив" false))) pin-ids)))))
+        ; Planter.GetStats
         (some int? (vals pin-value)) (assoc db :funcs (id-map
                                                         (vec (map
                                                                (fn [[k v]] (condp = k
