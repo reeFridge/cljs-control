@@ -25,7 +25,7 @@
                                      (.append "password" (:password data))
                                      (.append "grant_type" "password"))
                   :timeout         5000
-                  :format          :text
+                  :format          (ajax/text-request-format)
                   :response-format (ajax/json-response-format {:keywords? true})
                   :on-success      [::token-success]
                   :on-failure      [::token-fail]}}))
@@ -37,10 +37,60 @@
       {:http-xhrio {:method          :get
                     :uri             (url (str "/api/v1/users/" (:user_id token) "/relationships/devices"))
                     :timeout         5000
-                    :format          :text
+                    :format          (ajax/text-request-format)
                     :response-format (ajax/json-response-format {:keywords? true})
                     :on-success      [::devices-success]
                     :on-failure      [::devices-fail]}})))
+
+(re-frame/reg-event-fx
+  ::remove-device
+  (fn [{:keys [db]} [_ id]]
+    (let [token (:token db)]
+      {:http-xhrio {:method          :delete
+                    :uri             (url (str "/api/v1/devices/" id))
+                    :timeout         5000
+                    :headers         {"Authorization" (str "Bearer" " " (:access_token token))}
+                    :format          (ajax/text-request-format)
+                    :response-format (ajax/json-response-format {:keywords? true})
+                    :on-success      [::remove-success id]
+                    :on-failure      [::remove-fail]}})))
+
+(re-frame/reg-event-db
+  ::remove-success
+  (fn [db [_ id]]
+    (assoc db :devices (dissoc (:devices db) id))))
+
+(re-frame/reg-event-db
+  ::remove-fail
+  (fn [db _]
+    db))
+
+(re-frame/reg-event-fx
+  ::add-device
+  (fn [{:keys [db]} [_ data]]
+    (let [token (:token db)]
+      {:http-xhrio {:method          :post
+                    :uri             (url "/api/v1/devices")
+                    :timeout         5000
+                    :headers         {"Authorization" (str "Bearer" " " (:access_token token))}
+                    :params          (clj->js {:data {:type       "devices"
+                                                      :attributes {:name        (:name data)
+                                                                   :description (:description data)}}})
+                    :format          (ajax/json-request-format)
+                    :response-format (ajax/json-response-format {:keywords? true})
+                    :on-success      [::add-success]
+                    :on-failure      [::add-fail]}})))
+
+(re-frame/reg-event-db
+  ::add-success
+  (fn [db _]
+    (re-frame/dispatch [::request-devices])
+    db))
+
+(re-frame/reg-event-db
+  ::add-fail
+  (fn [db _]
+    db))
 
 (re-frame/reg-event-db
   ::devices-success
@@ -216,3 +266,10 @@
   ::set-active-panel
   (fn [db [_ value]]
     (assoc db :active-panel value)))
+
+(re-frame/reg-event-fx
+  ::reset-device
+  (fn [{:keys [db]}]
+    {:db (assoc db :funcs nil)
+     :dispatch-n (list [::set-active-device nil]
+                       [::set-active-func nil])}))

@@ -28,7 +28,6 @@
   (let [topic (str (:id device) "/rpc")
         src (str (:id device) "/response")
         payload (.stringify js/JSON (clj->js (assoc payload :src src)))]
-    (println "Sending: " "t:" topic "p:" payload)
     (.send connection topic payload)))
 
 (defn subscribe [connection topic handle]

@@ -35,13 +35,18 @@
    [:div] [:div] [:div]])
 
 (defn device-overview-panel []
-  (let [device-name (re-frame/subscribe [::subs/device-name])
+  (let [device-id (re-frame/subscribe [::subs/active-device])
+        device-name (re-frame/subscribe [::subs/device-name])
         funcs (re-frame/subscribe [::subs/funcs])]
     [:div.main-container
-     [:div.header [menu #(re-frame/dispatch [::events/set-active-panel :devices])] @device-name]
+     [:div.header [menu (fn []
+                          (re-frame/dispatch [::events/reset-device])
+                          (re-frame/dispatch [::events/set-active-panel :devices]))] @device-name]
      (when (seq @funcs) [func-list])
      [:div.footer
-      [:div.button.red "Удалить устройство"]]]))
+      [:div.button.red {:on-click (fn []
+                                    (re-frame/dispatch [::events/remove-device @device-id])
+                                    (re-frame/dispatch [::events/set-active-panel :devices]))} "Удалить устройство"]]]))
 
 (defn timer-item []
   (fn [{:keys [name state id time action type weekset]}]
@@ -100,23 +105,6 @@
          [tabs {:timer (when (seq timers) [timer-list timers])
                 :cycle (when (seq cycles) [timer-list cycles])}])])))
 
-(defn login-panel []
-  (let [email (r/atom "farm@ecolog.io")
-        password (r/atom "LF8KMFJZysdvAFaa")]
-    (fn []
-      [:div.main-container
-       [:div.header "Авторизация"]
-       [:div.form
-        [:input.email {:type  "text" :placeholder "Email"
-                       :value @email :on-change #(reset! email (-> % .-target .-value))}]
-        [:input.password {:type  "password" :placeholder "Пароль"
-                          :value @password :on-change #(reset! password (-> % .-target .-value))}]]
-       [:div.footer
-        [:div.button {:on-click #(re-frame/dispatch [::events/request-token {:email @email :password @password}])}
-         "Вход"]
-        [:div.button.green {:on-click #(re-frame/dispatch [::events/set-active-panel :register])}
-         "Регистрация"]]])))
-
 (defn register-panel []
   [:div.main-container
    [:div.header
@@ -155,7 +143,8 @@
      [:div.header "Мои устройства"]
      [devices-list (vals devices)]
      [:div.footer
-      [:div.button "+"]]]))
+      [:div.button {:on-click #(re-frame/dispatch [::events/set-active-panel :add-device])}
+       "+"]]]))
 
 (defn event-panel []
   (fn [{:keys [type name state time id]}]
@@ -171,6 +160,44 @@
                  [:div.title name]
                  [switch state #(re-frame/dispatch [::events/toggle-event-switch id])]])
      [:div.time-detail (join ":" (if type [(time/hour time) (time/minute time)] ["00" "00"]))]]))
+
+(defn edit-device-panel []
+  (let [name (r/atom "")
+        desc (r/atom "")]
+    (fn [id]
+      [:div.main-container
+       [:div.header
+        [:div.icon.left.arrow-left
+         {:on-click #(re-frame/dispatch [::events/set-active-panel :devices])}]
+        (if id "Изменение" "Добавление") " устройства"]
+       [:div.form
+        [:input.name {:type "text" :placeholder "Наименование"
+                      :value @name :on-change #(reset! name (-> % .-target .-value))}]
+        [:input.name {:type "text" :placeholder "Описание"
+                      :value @desc :on-change #(reset! desc (-> % .-target .-value))}]]
+       [:div.footer
+        [:div.button.green {:on-click (fn []
+                                        (re-frame/dispatch [::events/add-device {:name @name
+                                                                                 :description @desc}])
+                                        (re-frame/dispatch [::events/set-active-panel :devices]))}
+         (if id "Применить" "Добавить")]]])))
+
+(defn login-panel []
+  (let [email (r/atom "farm@ecolog.io")
+        password (r/atom "LF8KMFJZysdvAFaa")]
+    (fn []
+      [:div.main-container
+       [:div.header "Авторизация"]
+       [:div.form
+        [:input.email {:type  "text" :placeholder "Email"
+                       :value @email :on-change #(reset! email (-> % .-target .-value))}]
+        [:input.password {:type  "password" :placeholder "Пароль"
+                          :value @password :on-change #(reset! password (-> % .-target .-value))}]]
+       [:div.footer
+        [:div.button {:on-click #(re-frame/dispatch [::events/request-token {:email @email :password @password}])}
+         "Вход"]
+        [:div.button.green {:on-click #(re-frame/dispatch [::events/set-active-panel :register])}
+         "Регистрация"]]])))
 
 (defn app []
   (let [active (re-frame/subscribe [::subs/active-panel])
@@ -192,6 +219,7 @@
          :devices (do
                     (re-frame/dispatch [::events/request-devices])
                     [devices-panel])
+         :add-device [edit-device-panel]
          :device-overview [device-overview-panel (get @devices @active-device)]
          :func-control [func-control-panel (get @funcs @active-func)]
          :event [event-panel (get @events @active-event)])])))
