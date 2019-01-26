@@ -1,0 +1,300 @@
+@font-face {
+    font-family: 'PF DinDisplay Pro';
+    src: url('/fonts/PFDinDisplayPro-Thin.eot');
+    src: local('/fonts/PFDinDisplayPro-Thin'),
+         url('/fonts/PFDinDisplayPro-Thin.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/PFDinDisplayPro-Thin.woff') format('woff'),
+         url('/fonts/PFDinDisplayPro-Thin.ttf') format('truetype');
+    font-weight: 50;
+    font-style: normal;
+}
+
+body {
+    font-family: 'PF DinDisplay Pro';
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-container {
+    margin: 0 auto;
+}
+
+.menu-container {
+    display: inline-block;
+    float: left;
+    width: 50px;
+    margin-left: 25px;
+    margin-right: -25px;
+}
+
+.menu-container div {
+    height: 4px;
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.header {
+    text-align: center;
+    padding: 25px 0;
+    font-size: 30px;
+    background-color: rgba(90, 200, 245, 0.95);
+    color: rgba(255, 255, 255, 1.0);
+}
+
+.header .arrow-left {
+    margin-top: -7px;
+    margin-left: 25px;
+    margin-right: -25px;
+}
+
+.func, .timer, .device {
+    padding: 25px 25px;
+    height: 50px;
+    margin: 0;
+}
+
+.func.item, .timer.item, .time-detail, .device.item {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.time-detail {
+    font-size: 60px;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.func.detail {
+    background: none;
+}
+
+.func.item:active {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.func.item:hover {
+    cursor: pointer;
+}
+
+.icon {
+    height: 50px;
+    width: 50px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.icon.left {
+    float: left;
+}
+
+.icon.right {
+    float: right;
+    margin-left: 20px;
+}
+
+.func .title, .timer .title, .device .title {
+    font-size: 25px;
+    display: inline-block;
+    padding: 10px 0;
+    margin-left: 25px;
+}
+
+.func .title {
+    float: none;
+}
+
+.timer .title {
+    float: left;
+    width: 60px;
+    text-align: center;
+    height: 25px;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.button {
+    text-align: center;
+    font-size: 25px;
+    color: white;
+    margin: 10px;
+    padding: 10px;
+    background-color: rgba(90, 200, 245, 0.95);
+    border-radius: 70px;
+}
+
+.button.green {
+    background-color: rgba(90, 210, 90, 0.95);
+}
+
+.button.red {
+    background-color: rgba(255, 100, 100, 0.95);
+}
+
+.form {
+    padding: 0 10px;
+}
+
+input {
+    font-family: 'PF DinDisplay Pro';
+    display: block;
+    text-align: center;
+    font-size: 25px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+    height: 50px;
+}
+
+.icon.light {
+    background-image: url("/img/light.png");
+}
+
+.icon.water {
+    background-image: url("/img/bubbles.png");
+}
+
+.icon.control {
+    background-image: url("/img/control.png");
+}
+
+.icon.aeration {
+    background-image: url("/img/bubbles.png");
+}
+
+.icon.arrow-left {
+    background-image: url("/img/arrow-left.svg");
+}
+
+.icon.timer_ {
+    background-image: url("/img/timer.png");
+}
+
+.icon.cycle {
+    background-image: url("/img/cycle.png");
+}
+
+.tab .icon {
+    margin: 0 auto;
+    display: block;
+}
+
+.timer-info-container {
+    display: inline-block;
+    float: none;
+    width: 200px;
+    text-align: center;
+}
+
+.timer-info-container .time {
+    font-size: 25px;
+}
+
+.timer-info-container .action {
+    font-size: 18px;
+}
+
+.tab {
+    padding: 10px 0;
+    display: inline-block;
+    width: 50%;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.tab.active {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.tab .label {
+    font-size: 15px;
+    text-align: center;
+}
+
+.checkbox {
+    display: inline-block;
+    border: 2px solid rgba(90, 200, 245, 0.95);
+    border-radius: 125px;
+    float: right;
+    width: 50px;
+    height: 50px;
+}
+
+.checkbox .text {
+    font-size: 15px;
+    display: inline-block;
+    width: 50px;
+    height: 10px;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.checkbox.on .text {
+    color: white;
+}
+
+.checkbox.off .text {
+    color: rgba(90, 200, 245, 0.95);
+}
+
+.checkbox.on {
+    background-color: rgba(90, 200, 245, 0.95);
+}
+
+.checkbox.off {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.load-stub {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.load-stub .content {
+    flex: 1 0 auto;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.progress {
+  width: 100%;
+  height: 25px;
+  border-radius: 3px;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      #2980b9,
+      #2980b9 11px,
+      #eee 10px,
+      #eee 20px /* determines size */
+    );
+  background-size: 28px 28px;
+  animation: move .5s linear infinite;
+}
+
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 28px 0;
+  }
+}

@@ -18,6 +18,11 @@
     (:devices db)))
 
 (re-frame/reg-sub
+  ::user
+  (fn [db]
+    (:user db)))
+
+(re-frame/reg-sub
  ::events
  (fn [db [_ id]]
    (filter (fn [{:keys [func-id]}] (= func-id id)) (vals (:events db)))))

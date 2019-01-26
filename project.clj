@@ -6,7 +6,8 @@
                  [com.andrewmcveigh/cljs-time "0.5.2"]
                  [day8.re-frame/http-fx "0.1.6"]
                  [cljs-ajax "0.7.5"]
-                 [cljsjs/paho "1.0.3-0"]]
+                 [cljsjs/paho "1.0.3-0"]
+                 [re-com "2.4.0"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]]
 

@@ -50,6 +50,7 @@
    :loading false
    :devices {}
    :funcs nil
+   :user nil
    :events (id-map [(timer "Полдень"
                            true
                            "switch#13"

@@ -43,6 +43,32 @@
                     :on-failure      [::devices-fail]}})))
 
 (re-frame/reg-event-fx
+  ::request-user
+  (fn [{:keys [db]} [_ token]]
+    {:http-xhrio {:method          :get
+                  :uri             (url (str "/api/v1/users/" (:user_id token)))
+                  :headers         {"Authorization" (str "Bearer" " " (:access_token token))}
+                  :timeout         5000
+                  :format          (ajax/text-request-format)
+                  :response-format (ajax/json-response-format {:keywords? true})
+                  :on-success      [::user-success]
+                  :on-failure      [::user-fail]}}))
+
+(re-frame/reg-event-db
+  ::user-success
+  (fn [db [_ response]]
+    (assoc db :user {:id (:id (:data response))
+                     :email (:email (:attributes (:data response)))
+                     :first-name (:first_name (:attributes (:data response)))
+                     :last-name (:last_name (:attributes (:data response)))
+                     :uuid (:uuid (:attributes (:data response)))})))
+
+(re-frame/reg-event-db
+  ::user-fail
+  (fn [db _]
+    db))
+
+(re-frame/reg-event-fx
   ::remove-device
   (fn [{:keys [db]} [_ id]]
     (let [token (:token db)]
@@ -69,11 +95,12 @@
   ::add-device
   (fn [{:keys [db]} [_ data]]
     (let [token (:token db)]
-      {:http-xhrio {:method          :post
-                    :uri             (url "/api/v1/devices")
+      {:http-xhrio {:method          (if (:id data) :patch :post)
+                    :uri             (url (str "/api/v1/devices" (when (:id data) (str "/" (:id data)))))
                     :timeout         5000
                     :headers         {"Authorization" (str "Bearer" " " (:access_token token))}
                     :params          (clj->js {:data {:type       "devices"
+                                                      :id         (:id data)
                                                       :attributes {:name        (:name data)
                                                                    :description (:description data)}}})
                     :format          (ajax/json-request-format)
@@ -221,6 +248,7 @@
 (re-frame/reg-event-db
   ::token-success
   (fn [db [_ token]]
+    (re-frame/dispatch [::request-user token])
     (assoc (assoc (assoc db :loading false) :token token) :active-panel :devices)))
 
 (re-frame/reg-event-db
@@ -270,6 +298,11 @@
 (re-frame/reg-event-fx
   ::reset-device
   (fn [{:keys [db]}]
-    {:db (assoc db :funcs nil)
+    {:db         (assoc db :funcs nil)
      :dispatch-n (list [::set-active-device nil]
                        [::set-active-func nil])}))
+
+(re-frame/reg-event-db
+  ::reset-user
+  (fn [db _]
+    (assoc db :user nil)))
