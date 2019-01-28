@@ -53,6 +53,11 @@
    (:active-panel db)))
 
 (re-frame/reg-sub
+  ::panel-data
+  (fn [db _]
+    (:panel-data db)))
+
+(re-frame/reg-sub
   ::loading
   (fn [db _]
     (:loading db)))

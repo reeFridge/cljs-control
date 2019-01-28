@@ -326,8 +326,8 @@
 
 (re-frame/reg-event-db
   ::set-active-panel
-  (fn [db [_ value]]
-    (assoc db :active-panel value)))
+  (fn [db [_ value data]]
+    (assoc (assoc db :active-panel value) :panel-data data)))
 
 (re-frame/reg-event-fx
   ::reset-device

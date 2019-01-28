@@ -277,15 +277,10 @@
                                                  (re-frame/dispatch [::events/remove-device @device-id])
                                                  (re-frame/dispatch [::events/set-active-panel :devices]))]]]]]]))
 
-(defn register-panel []
-  (let [first-name (r/atom "")
-        last-name (r/atom "")
-        email (r/atom "")
-        pass (r/atom "")
-        pass-again (r/atom "")
-        script-id "recaptcha-script"]
+(defn captcha-panel [data]
+  (let [script-id "recaptcha-script"]
     (r/create-class
-      {:display-name           "register-panel"
+      {:display-name           "captcha-panel"
        :component-did-mount    (fn []
                                  (let [script-tag (.createElement js/document "script")]
                                    (.setAttribute script-tag "src" "https://www.google.com/recaptcha/api.js?onload=captchaLoaded&render=explicit")
@@ -293,50 +288,70 @@
                                    (g/set js/window "captchaLoaded" (fn []
                                                                       (let [captcha (g/get js/window "grecaptcha")]
                                                                         (.render captcha "recaptcha-container" (clj->js {:sitekey "6LdUFlEUAAAAADQCy19MC9ZizHMfpNV-F9aFJI2v"
-                                                                                                                         :theme "light"})))))
+                                                                                                                         :theme   "light"
+                                                                                                                         :hl      "ru"})))))
                                    (.appendChild (.-head js/document) script-tag)))
        :component-will-unmount (fn [] (let [script-tag (.getElementById js/document script-id)]
                                         (.removeChild (.-head js/document) script-tag)))
        :reagent-render
                                (fn []
                                  [v-box :min-height "100vh"
-                                  :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :login]))
+                                  :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :register]))
                                                       "Регистрация"
                                                       nil])
                                              [box :padding "10px" :justify :center :size "1"
                                               :child [v-box
                                                       :gap "10px"
-                                                      :children [[box :style {:align-self "center"}
-                                                                  :child [:div.logo]]
-                                                                 [input-text :width "100%"
-                                                                  :model first-name
-                                                                  :placeholder "Имя"
-                                                                  :on-change #(reset! first-name %)]
-                                                                 [input-text :width "100%"
-                                                                  :model last-name
-                                                                  :placeholder "Фамилия"
-                                                                  :on-change #(reset! last-name %)]
-                                                                 [input-text :width "100%"
-                                                                  :model email
-                                                                  :placeholder "Email"
-                                                                  :on-change #(reset! email %)]
-                                                                 [input-password :width "100%"
-                                                                  :model pass
-                                                                  :placeholder "Пароль"
-                                                                  :on-change #(reset! pass %)]
-                                                                 [input-password :width "100%"
-                                                                  :model pass-again
-                                                                  :placeholder "Повторите пароль"
-                                                                  :on-change #(reset! pass-again %)]
-                                                                 [box :justify :center
+                                                      :children [[box
                                                                   :child [:div {:id "recaptcha-container" :style {:margin "0 auto"}}]]]]]
                                              [box :padding "10px"
                                               :child [v-box :gap "10px"
                                                       :children [[button :label "Отправить" :class "btn-block"
-                                                                  :on-click #(re-frame/dispatch [::events/register-click {:first-name @first-name
-                                                                                                                          :last-name  @last-name
-                                                                                                                          :email      @email
-                                                                                                                          :pass       @pass}])]]]]]])})))
+                                                                  :on-click #(re-frame/dispatch [::events/register-click data])]]]]]])})))
+
+(defn register-panel []
+  (let [first-name (r/atom "")
+        last-name (r/atom "")
+        email (r/atom "")
+        pass (r/atom "")
+        pass-again (r/atom "")]
+    (fn []
+      [v-box :min-height "100vh"
+       :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :login]))
+                           "Регистрация"
+                           nil])
+                  [box :padding "10px" :justify :center :size "1"
+                   :child [v-box
+                           :gap "10px"
+                           :children [[box :style {:align-self "center"}
+                                       :child [:div.logo]]
+                                      [input-text :width "100%"
+                                       :model first-name
+                                       :placeholder "Имя"
+                                       :on-change #(reset! first-name %)]
+                                      [input-text :width "100%"
+                                       :model last-name
+                                       :placeholder "Фамилия"
+                                       :on-change #(reset! last-name %)]
+                                      [input-text :width "100%"
+                                       :model email
+                                       :placeholder "Email"
+                                       :on-change #(reset! email %)]
+                                      [input-password :width "100%"
+                                       :model pass
+                                       :placeholder "Пароль"
+                                       :on-change #(reset! pass %)]
+                                      [input-password :width "100%"
+                                       :model pass-again
+                                       :placeholder "Повторите пароль"
+                                       :on-change #(reset! pass-again %)]]]]
+                  [box :padding "10px"
+                   :child [v-box :gap "10px"
+                           :children [[button :label "Продолжить" :class "btn-block"
+                                       :on-click #(re-frame/dispatch [::events/set-active-panel :captcha {:first-name @first-name
+                                                                                                          :last-name  @last-name
+                                                                                                          :email      @email
+                                                                                                          :pass       @pass}])]]]]]])))
 
 (defn login-panel []
   (let [email (r/atom "farm@ecolog.io")
@@ -370,6 +385,7 @@
         active-device (re-frame/subscribe [::subs/active-device])
         active-func (re-frame/subscribe [::subs/active-func])
         active-event (re-frame/subscribe [::subs/active-event])
+        panel-data (re-frame/subscribe [::subs/panel-data])
         loading (re-frame/subscribe [::subs/loading])]
     (fn []
       ;(when @loading [:div.wrapper.load-stub
@@ -378,6 +394,7 @@
       (condp = @active
         :login [login-panel]
         :register [register-panel]
+        :captcha [captcha-panel @panel-data]
         :devices (do
                    (re-frame/dispatch [::events/request-devices])
                    [devices-panel])
