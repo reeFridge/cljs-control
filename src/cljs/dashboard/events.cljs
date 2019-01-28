@@ -31,6 +31,34 @@
                   :on-failure      [::token-fail]}}))
 
 (re-frame/reg-event-fx
+  ::request-register
+  (fn [_ [_ data]]
+    {:http-xhrio {:method          :post
+                  :uri             (url "/api/v1/users")
+                  :params          (clj->js {:data {:type          "users"
+                                                    :id            nil
+                                                    :attributes    {:email      (:email data)
+                                                                    :first_name (:first-name data)
+                                                                    :last_name  (:last-name data)
+                                                                    :password   (:pass data)}
+                                                    :relationships {:role {:data {:type "roles" :id "user"}}}}})
+                  :timeout         5000
+                  :format          (ajax/json-request-format)
+                  :response-format (ajax/json-response-format {:keywords? true})
+                  :on-success      [::register-success]
+                  :on-failure      [::register-fail]}}))
+
+(re-frame/reg-event-db
+  ::register-fail
+  (fn [db _]
+    db))
+
+(re-frame/reg-event-db
+  ::register-fail
+  (fn [db _]
+    db))
+
+(re-frame/reg-event-fx
   ::request-devices
   (fn [{:keys [db]} _]
     (let [token (:token db)]
@@ -57,11 +85,11 @@
 (re-frame/reg-event-db
   ::user-success
   (fn [db [_ response]]
-    (assoc db :user {:id (:id (:data response))
-                     :email (:email (:attributes (:data response)))
+    (assoc db :user {:id         (:id (:data response))
+                     :email      (:email (:attributes (:data response)))
                      :first-name (:first_name (:attributes (:data response)))
-                     :last-name (:last_name (:attributes (:data response)))
-                     :uuid (:uuid (:attributes (:data response)))})))
+                     :last-name  (:last_name (:attributes (:data response)))
+                     :uuid       (:uuid (:attributes (:data response)))})))
 
 (re-frame/reg-event-db
   ::user-fail
@@ -255,6 +283,12 @@
   ::token-fail
   (fn [db _]
     (assoc (assoc db :loading false) :active-panel :login)))
+
+(re-frame/reg-event-fx
+  ::register-click
+  (fn [_ [_ data]]
+    {:dispatch-n (list [::request-register data]
+                       [::set-active-panel :login])}))
 
 (re-frame/reg-event-db
   ::initialize-db
