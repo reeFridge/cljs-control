@@ -7,7 +7,7 @@
     [cljs-time.format :as format]
     [reagent.core :as r]
     [clojure.string :refer [join]]
-    [re-com.core :refer [v-box box h-box input-text input-password]]
+    [re-com.core :refer [v-box box h-box input-text input-password modal-panel]]
     [re-com.buttons :refer [button md-icon-button row-button]]
     [re-com.text :refer [title label]]
     [re-com.box :refer [line border]]
@@ -251,8 +251,57 @@
                                                                                             :description @desc}])
                                                    (re-frame/dispatch [::events/set-active-panel :devices]))]]]]]])))
 
+(defn grow-mode-panel []
+  (let [grow-mode (re-frame/subscribe [::subs/grow-mode])
+        active-mode-part (r/atom :plant)
+        variants (r/atom [])
+        show-popup? (r/atom false)
+        render-select (fn [key variants]
+                        [modal-panel
+                         :backdrop-on-click #(reset! show-popup? false)
+                         :child [box
+                                 :child [v-box :width "300px"
+                                         :children (vec (map
+                                                          (fn [name] [border :padding "10px" :border "none" :b-border "1px solid lightgrey"
+                                                                      :child [title :label name :level :level2
+                                                                              :style {:align-self "center"}
+                                                                              :attr {:on-click (fn []
+                                                                                                 (reset! show-popup? false)
+                                                                                                 (re-frame/dispatch [::events/set-grow-mode (assoc @grow-mode key name)]))}]]) variants))]]])]
+    (fn []
+      (let [plant (:plant @grow-mode)
+            stage (:stage @grow-mode)]
+        [v-box :min-height "100vh"
+         :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :device-overview]))
+                             "Режим выращивания"
+                             nil])
+                    (when @show-popup? (render-select @active-mode-part @variants))
+                    [box
+                     :child [v-box
+                             :children [[border :padding "15px" :border "none" :b-border "1px solid lightgrey"
+                                         :child [h-box
+                                                 :attr {:on-click (fn []
+                                                                    (reset! active-mode-part :plant)
+                                                                    (reset! variants ["Зелень" "Ягода" "Овощи" "Фрукты"])
+                                                                    (reset! show-popup? true))}
+                                                 :children [[box :size "1"
+                                                             :child [title :level :level2 :label "Растение"]]
+                                                            [box :style {:align-self "center"}
+                                                             :child [title :level :level3 :label plant]]]]]
+                                        [border :padding "15px" :border "none" :b-border "1px solid lightgrey"
+                                         :child [h-box
+                                                 :attr {:on-click (fn []
+                                                                    (reset! active-mode-part :stage)
+                                                                    (reset! variants ["Вегетация" "Плодоношение" "Авто"])
+                                                                    (reset! show-popup? true))}
+                                                 :children [[box :size "1"
+                                                             :child [title :level :level2 :label "Стадия"]]
+                                                            [box :style {:align-self "center"}
+                                                             :child [title :level :level3 :label stage]]]]]]]]]]))))
+
 (defn device-overview-panel []
-  (let [devices (re-frame/subscribe [::subs/devices])
+  (let [grow-mode (re-frame/subscribe [::subs/grow-mode])
+        devices (re-frame/subscribe [::subs/devices])
         device-id (re-frame/subscribe [::subs/active-device])
         name (:name (get @devices @device-id))
         desc (:desc (get @devices @device-id))
@@ -269,6 +318,18 @@
                                              :children [[title :level :level2 :label name :style {:align-self "center"}]
                                                         [title :level :level3 :label desc :style {:align-self "center"}]
                                                         [title :level :level4 :label id :style {:align-self "center"}]]]]
+                                    [border :border "none" :b-border "1px solid lightgrey"
+                                     :child [h-box
+                                             :children [(icon "grow")
+                                                        [box :size "1" :style {:align-self "center"}
+                                                         :child [v-box :padding "10px"
+                                                                 :children [[title :level :level3
+                                                                             :label "Режим выращивания"]
+                                                                            [title :level :level4 :margin-top "" :style {:font-weight "10"}
+                                                                             :label (str (:plant @grow-mode) " > " (:stage @grow-mode))]]]]
+                                                        [box :padding "10px"
+                                                         :child [row-button :md-icon-name "zmdi-tune" :mouse-over-row? true
+                                                                 :on-click #(re-frame/dispatch [::events/set-active-panel :grow-mode])]]]]]
                                     (when (seq @funcs) [func-list])]]]
                 [box :padding "10px"
                  :child [v-box :gap "10px"
@@ -402,4 +463,5 @@
         :edit-device [edit-device-panel (get @devices @active-device)]
         :device-overview [device-overview-panel (get @devices @active-device)]
         :func-control [func-control-panel (get @funcs @active-func)]
+        :grow-mode [grow-mode-panel]
         :event [event-panel (get @events @active-event)]))))

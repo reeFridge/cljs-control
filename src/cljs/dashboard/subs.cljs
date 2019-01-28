@@ -58,6 +58,11 @@
     (:panel-data db)))
 
 (re-frame/reg-sub
+  ::grow-mode
+  (fn [db _]
+    (:grow-mode db)))
+
+(re-frame/reg-sub
   ::loading
   (fn [db _]
     (:loading db)))

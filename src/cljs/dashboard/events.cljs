@@ -337,6 +337,11 @@
                        [::set-active-func nil])}))
 
 (re-frame/reg-event-db
+  ::set-grow-mode
+  (fn [db [_ mode]]
+    (assoc db :grow-mode mode)))
+
+(re-frame/reg-event-db
   ::reset-user
   (fn [db _]
     (assoc db :user nil)))

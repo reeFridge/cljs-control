@@ -41,7 +41,9 @@
    :type :cycle})
 
 (def default-db
-  {:mqtt-connection nil
+  {:grow-mode {:plant "Не выбрано"
+               :stage "Не выбрано"}
+   :mqtt-connection nil
    :token nil
    :active-panel :login
    :active-func nil

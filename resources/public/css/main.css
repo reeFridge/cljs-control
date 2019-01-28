@@ -64,6 +64,10 @@ input {
     background-image: url("/img/light.png");
 }
 
+.icon.grow {
+    background-image: url("/img/grow.png");
+}
+
 .icon.control {
     background-image: url("/img/control.png");
 }
