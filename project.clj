@@ -21,10 +21,10 @@
 
   :profiles
   {:dev
-   {:dependencies [[binaryage/devtools "0.9.10"]]
+         {:dependencies [[binaryage/devtools "0.9.10"]]
 
-    :plugins      [[lein-figwheel "0.5.16"]]}
-   :prod { }
+          :plugins      [[lein-figwheel "0.5.16"]]}
+   :prod {}
    }
 
   :cljsbuild
@@ -48,7 +48,6 @@
                     :optimizations   :advanced
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}
-
 
     ]}
   )

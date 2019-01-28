@@ -14,16 +14,17 @@
 
 (defn header-action [icon on-click]
   [box :padding "10px"
-   :child [md-icon-button :md-icon-name icon :size :larger
+   :child [md-icon-button :md-icon-name icon :size :larger :style {:color "white"}
            :on-click on-click]])
 
 (defn header [items]
   (let [empty-item (fn [] [box :width "52px" :height "52px" :child ""])]
-    [border :border "none" :b-border "1px solid lightgrey"
+    [box :style {:background-color "rgba(90, 200, 245, 0.95)"}
      :child [h-box :children (vec (map (fn [item] (cond
                                                     (= item nil) (empty-item)
                                                     (string? item) [box :justify :center :size "1" :padding "5px"
-                                                                    :child [title :label item :style {:font-size "20px"}]]
+                                                                    :child [title :label item :style {:font-size "20px"
+                                                                                                      :color "white"}]]
                                                     :else item)) items))]]))
 
 (defn switch [state click-handler]
@@ -46,12 +47,13 @@
                                                                        :light "light"
                                                                        :water "aeration")))
                         [box :size "1" :style {:align-self "center"}
-                         :child [v-box :children [[title :level :level3 :margin-top "0.3em"
+                         :child [v-box :padding "10px"
+                                 :children [[title :level :level3
                                                    :label name]
                                                   [title :level :level4 :margin-top "" :style {:font-weight "10"}
                                                    :label (str "Состояние: " (if state "вкл" "выкл"))]]]]
                         [box :padding "10px"
-                         :child [h-box :style {:font-size "35px"}
+                         :child [h-box
                                  :children [[row-button :md-icon-name "zmdi-settings" :mouse-over-row? true
                                              :on-click (fn []
                                                          (re-frame/dispatch-sync [::events/set-active-func id])
@@ -170,7 +172,7 @@
                                     [title :level :level4 :margin-top "" :style {:font-weight "10"}
                                      :label desc]]]
                         [box :padding "10px"
-                         :child [h-box :style {:font-size "35px"}
+                         :child [h-box
                                  :children [[row-button :md-icon-name "zmdi-edit" :mouse-over-row? true
                                              :on-click (fn []
                                                          (re-frame/dispatch-sync [::events/set-active-device id])
@@ -269,7 +271,7 @@
                                     (when (seq @funcs) [func-list])]]]
                 [box :padding "10px"
                  :child [v-box :gap "10px"
-                         :children [[button :label "Удалить устройство" :class "btn-block"
+                         :children [[button :label "Удалить устройство" :class "btn-block btn-danger"
                                      :on-click (fn []
                                                  (re-frame/dispatch [::events/remove-device @device-id])
                                                  (re-frame/dispatch [::events/set-active-panel :devices]))]]]]]]))
@@ -328,7 +330,7 @@
                                                          :on-change #(reset! password %)]]]]
                   [box :padding "10px"
                    :child [v-box :gap "10px"
-                           :children [[button :label "Вход" :class "btn-block btn-primary"
+                           :children [[button :label "Вход" :class "btn-block btn-info"
                                        :on-click #(re-frame/dispatch [::events/request-token {:email @email :password @password}])]
                                       [button :label "Регистрация" :class "btn-block"
                                        :on-click #(re-frame/dispatch [::events/set-active-panel :register])]]]]]])))

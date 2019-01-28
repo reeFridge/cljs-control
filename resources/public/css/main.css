@@ -1,5 +1,45 @@
+@font-face {
+    font-family: 'PF DinDisplay Pro';
+    src: url('/fonts/PFDinDisplayPro-Thin.eot');
+    src: local('/fonts/PFDinDisplayPro-Thin'),
+         url('/fonts/PFDinDisplayPro-Thin.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/PFDinDisplayPro-Thin.woff') format('woff'),
+         url('/fonts/PFDinDisplayPro-Thin.ttf') format('truetype');
+    font-weight: 50;
+    font-style: normal;
+}
+
+body {
+    font-family: 'PF DinDisplay Pro';
+}
+
+.rc-row-button {
+    color: black;
+    font-size: 35px;
+    height: 35px;
+    line-height: 35px;
+    align-self: center;
+}
+
+.level1, .level2, .level3, .level4 {
+    font-family: 'PF DinDisplay Pro';
+}
+
+.level3 {
+    font-size: 17px;
+}
+
 input {
     text-align: center;
+}
+
+.btn {
+    border-radius: 70px;
+    outline: none !important;
+}
+
+.btn-info {
+    background-color: rgba(90, 200, 245, 0.95);
 }
 
 .icon {
