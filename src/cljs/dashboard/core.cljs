@@ -2,7 +2,7 @@
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as re-frame]
-   [dashboard.events :as events]
+   [dashboard.events.common :as events]
    [dashboard.views :as views]
    [dashboard.config :as config]))
 

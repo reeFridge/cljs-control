@@ -8,7 +8,7 @@
 (declare client)
 (def broker "mqtt.agrofarm.city")
 
-(defn connect [device handle]
+(defn connect [device topics handle]
   (let [mqtt (Paho.MQTT.Client. (str "ws://" broker ":15675" "/ws") (str (random-uuid)))
         options (js/Object.)]
     (set! (.-onConnectionLost mqtt) #(re-frame/dispatch [(:lost handle) %]))
@@ -16,7 +16,7 @@
                                                          (js->clj (.parse js/JSON (.-payloadString %)) :keywordize-keys true)]))
     (set! (.-onMessageDelivered mqtt) #(re-frame/dispatch [(:message-delivered handle)
                                                            (js->clj (.parse js/JSON (.-payloadString %)) :keywordize-keys true)]))
-    (set! (.-onSuccess options) #(re-frame/dispatch [(:success handle)]))
+    (set! (.-onSuccess options) #(re-frame/dispatch [(:success handle) topics]))
     (set! (.-onFailure options) #(re-frame/dispatch [(:failure handle)]))
     (set! (.-mqttVersion options) 4)
     (set! (.-userName options) (:id device))
@@ -32,6 +32,6 @@
 
 (defn subscribe [connection topic handle]
   (let [options (js/Object.)]
-    (set! (.-onSuccess options) #(re-frame/dispatch [(:success handle)]))
-    (set! (.-onFailure options) #(re-frame/dispatch [(:failure handle)]))
+    (set! (.-onSuccess options) #(re-frame/dispatch [(:success handle) topic]))
+    (set! (.-onFailure options) #(re-frame/dispatch [(:failure handle) topic]))
     (.subscribe connection topic options)))

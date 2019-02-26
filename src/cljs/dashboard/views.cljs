@@ -2,15 +2,20 @@
   (:require
     [re-frame.core :as re-frame]
     [dashboard.subs :as subs]
-    [dashboard.events :as events]
+    [dashboard.events.common :as events-common]
+    [dashboard.events.mqtt :as events-mqtt]
+    [dashboard.events.ui :as events-ui]
+    [dashboard.events.rpc :as events-rpc]
+    [dashboard.events.request :as events-request]
     [cljs-time.core :as time]
     [cljs-time.format :as format]
+    [cljs-time.coerce :refer [from-long]]
     [reagent.core :as r]
     [clojure.string :refer [join]]
     [re-com.core :refer [v-box box h-box input-text input-password modal-panel]]
     [re-com.buttons :refer [button md-icon-button row-button]]
     [re-com.text :refer [title label]]
-    [re-com.box :refer [line border]]
+    [re-com.box :refer [line border gap]]
     [goog.object :as g]))
 
 (defn header-action [icon on-click]
@@ -38,6 +43,36 @@
   [box :padding "10px" :style {:align-self "center"}
    :child [:div.icon {:class class}]])
 
+(def custom-formatter (format/formatter "HH:mm:ss"))
+
+(defn find-first [f coll]
+  (first (drop-while (complement f) coll)))
+
+(defn schedule-rule-item []
+  (let [funcs (re-frame/subscribe [::subs/funcs])
+        get-func-by-pin (fn [pin] (find-first (fn [func] (= pin (:pin func))) (vals @funcs)))]
+    (fn [{:keys [time value pin]}]
+      (let [formatted-time (format/unparse custom-formatter (from-long (* time 1000)))
+            func (get-func-by-pin pin)]
+        [border
+         :border "none"
+         :b-border "1px solid lightgrey"
+         :child [h-box
+                 :children [[box :padding "10px" :style {:align-self "center"}
+                             :child [md-icon-button :md-icon-name "zmdi-time-interval" :size :larger]]
+                            [box :size "1" :style {:align-self "center"}
+                             :child [v-box :padding "10px"
+                                     :children [[title :level :level3
+                                                 :label (str "до " formatted-time)]
+                                                [title :level :level4 :margin-top "" :style {:font-weight "10"}
+                                                 :label (str "Действие: " (:name func) " > " (if (= 1 value) "включен" "выключен"))]]]]]]]))))
+
+(defn schedule-list [_]
+  (let [rules @(re-frame/subscribe [::subs/schedule-rules])]
+    [v-box
+     :children (for [rule rules]
+                 ^{:key (str (:pin rule) (:time rule))} [schedule-rule-item rule])]))
+
 (defn func-item []
   (fn [{:keys [name state id class]}]
     [border
@@ -57,8 +92,8 @@
                          :child [h-box
                                  :children [[row-button :md-icon-name "zmdi-settings" :mouse-over-row? true
                                              :on-click (fn []
-                                                         (re-frame/dispatch-sync [::events/set-active-func id])
-                                                         (re-frame/dispatch [::events/set-active-panel :func-control]))]]]]]]]))
+                                                         (re-frame/dispatch-sync [::events-common/set-active-func id])
+                                                         (re-frame/dispatch [::events-common/set-active-panel :func-control]))]]]]]]]))
 
 (defn func-list []
   (let [funcs @(re-frame/subscribe [::subs/funcs])]
@@ -71,8 +106,8 @@
     [:li
      [:div.timer.item
       {:on-click (fn []
-                   (re-frame/dispatch-sync [::events/set-active-event id])
-                   (re-frame/dispatch [::events/set-active-panel :event]))}
+                   (re-frame/dispatch-sync [::events-common/set-active-event id])
+                   (re-frame/dispatch [::events-common/set-active-panel :event]))}
       [:div.title name]
       [:div.timer-info-container
        [:div.time (time/hour time) ":" (time/minute time) (if (= type :cycle) (join "| " [" " weekset]))]
@@ -104,8 +139,8 @@
        (get contents @active-tab)
        [:div.footer
         [:div.button {:on-click (fn []
-                                  (re-frame/dispatch-sync [::events/set-active-event nil])
-                                  (re-frame/dispatch [::events/set-active-panel :event]))} "+"]]])))
+                                  (re-frame/dispatch-sync [::events-common/set-active-event nil])
+                                  (re-frame/dispatch [::events-common/set-active-panel :event]))} "+"]]])))
 
 ;(defn func-control-panel []
 ;  (fn [{:keys [name state id class]}]
@@ -113,11 +148,11 @@
 ;      [:div.main-container
 ;       [:div.header
 ;        [:div.icon.left.arrow-left
-;         {:on-click #(re-frame/dispatch [::events/set-active-panel :device-overview])}]
+;         {:on-click #(re-frame/dispatch [::events-common/set-active-panel :device-overview])}]
 ;        "Управление"]
 ;       [:div.func.detail
 ;        [:div.icon.left {:class class}] [:div.title name]
-;        [switch state #(re-frame/dispatch [::events/toggle-switch id])]]
+;        [switch state #(re-frame/dispatch [::events-common/toggle-switch id])]]
 ;       (let [timers (filter (fn [{:keys [type]}] (= type :timer)) events)
 ;             cycles (filter (fn [{:keys [type]}] (= type :cycle)) events)]
 ;         [tabs {:timer (when (seq timers) [timer-list timers])
@@ -126,9 +161,9 @@
 (defn func-control-panel []
   (fn [{:keys [name state id class]}]
     [v-box :min-height "100vh"
-     :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :device-overview]))
+     :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events-common/set-active-panel :device-overview]))
                          "Управление"
-                         (header-action "zmdi-refresh" #(re-frame/dispatch [::events/planter-get-stats]))])
+                         (header-action "zmdi-refresh" #(re-frame/dispatch [::events-rpc/planter-get-stats]))])
                 [box :size "1"
                  :child [v-box
                          :children [[box :padding "10px" :style {:background "rgba(0, 0, 0, 0.1)"}
@@ -143,7 +178,7 @@
                                                                                    :label (str "Состояние: " (if state "вкл" "выкл"))]]]]
                                                         [box :padding "10px"
                                                          :child [h-box :style {:font-size "35px"}
-                                                                 :children [[switch state #(re-frame/dispatch [::events/toggle-switch id])]]]]]]]]]]
+                                                                 :children [[switch state #(re-frame/dispatch [::events-common/toggle-switch id])]]]]]]]]]]
                 [box :padding "10px"
                  :child [v-box :gap "10px"
                          :children [[button :label "Создать событие" :class "btn-block"
@@ -154,14 +189,14 @@
     [:div.main-container
      [:div.header
       [:div.icon.left.arrow-left
-       {:on-click #(re-frame/dispatch [::events/set-active-panel :func-control])}]
+       {:on-click #(re-frame/dispatch [::events-common/set-active-panel :func-control])}]
       (if type "Изменение" "Добавление") " события"]
      (when type [:div.func.detail
                  [:div.icon.left {:class (condp = type
                                            :cycle "cycle"
                                            :timer "timer_")}]
                  [:div.title name]
-                 [switch state #(re-frame/dispatch [::events/toggle-event-switch id])]])
+                 [switch state #(re-frame/dispatch [::events-common/toggle-event-switch id])]])
      [:div.time-detail (join ":" (if type [(time/hour time) (time/minute time)] ["00" "00"]))]]))
 
 (defn device-item []
@@ -176,15 +211,18 @@
                          :child [h-box
                                  :children [[row-button :md-icon-name "zmdi-edit" :mouse-over-row? true
                                              :on-click (fn []
-                                                         (re-frame/dispatch-sync [::events/set-active-device id])
-                                                         (re-frame/dispatch [::events/set-active-panel :edit-device]))]
+                                                         (re-frame/dispatch-sync [::events-common/set-active-device id])
+                                                         (re-frame/dispatch [::events-common/set-active-panel :edit-device]))]
                                             [row-button :md-icon-name "zmdi-settings" :mouse-over-row? true
                                              :on-click (fn []
-                                                         (re-frame/dispatch-sync [::events/set-active-device id])
+                                                         (re-frame/dispatch-sync [::events-common/set-active-device id])
                                                          (let [devices (re-frame/subscribe [::subs/devices])
-                                                               active (re-frame/subscribe [::subs/active-device])]
-                                                           (re-frame/dispatch-sync [::events/mqtt-connect (get @devices @active)]))
-                                                         (re-frame/dispatch [::events/set-active-panel :device-overview]))]]]]]]]))
+                                                               active (re-frame/subscribe [::subs/active-device])
+                                                               active-device (get @devices @active)]
+                                                           (re-frame/dispatch-sync [::events-mqtt/connect
+                                                                                    active-device
+                                                                                    [[(str (:id active-device) "/response/#") ::events-rpc/get-stats-and-schedule]]]))
+                                                         (re-frame/dispatch [::events-common/set-active-panel :device-overview]))]]]]]]]))
 
 (defn devices-list [devices]
   [v-box
@@ -193,15 +231,15 @@
      ^{:key (:id device)} [device-item device])])
 
 (defn devices-panel []
-  (re-frame/dispatch [::events/reset-device])
+  (re-frame/dispatch [::events-common/reset-device])
   (let [devices (re-frame/subscribe [::subs/devices])
         user (re-frame/subscribe [::subs/user])]
     [v-box :min-height "100vh"
      :children [(header [(header-action "zmdi-square-right" (fn []
-                                                              (re-frame/dispatch [::events/reset-user])
-                                                              (re-frame/dispatch [::events/set-active-panel :login])))
+                                                              (re-frame/dispatch [::events-common/reset-user])
+                                                              (re-frame/dispatch [::events-common/set-active-panel :login])))
                          "Мои устройства"
-                         (header-action "zmdi-refresh" #(re-frame/dispatch [::events/request-devices]))])
+                         (header-action "zmdi-refresh" #(re-frame/dispatch [::events-request/devices]))])
                 [box :size "1"
                  :child [v-box
                          :children [[box :padding "10px" :style {:background "rgba(0, 0, 0, 0.1)"}
@@ -212,14 +250,14 @@
                 [box :padding "10px"
                  :child [v-box :gap "10px"
                          :children [[button :label "Добавить" :class "btn-block"
-                                     :on-click #(re-frame/dispatch [::events/set-active-panel :add-device])]]]]]]))
+                                     :on-click #(re-frame/dispatch [::events-common/set-active-panel :add-device])]]]]]]))
 
 (defn edit-device-panel [device]
   (let [name (r/atom (if (not (= nil device)) (:name device) ""))
         desc (r/atom (if (not (= nil device)) (:desc device) ""))]
     (fn [{:keys [id]}]
       [v-box :min-height "100vh"
-       :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :devices]))
+       :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events-common/set-active-panel :devices]))
                            (str (if id "Изменение" "Добавление") " устройства")
                            nil])
                   [box :size "1"
@@ -246,10 +284,10 @@
                    :child [v-box :gap "10px"
                            :children [[button :label (if id "Применить" "Добавить") :class "btn-block"
                                        :on-click (fn []
-                                                   (re-frame/dispatch [::events/add-device {:id          id
-                                                                                            :name        @name
-                                                                                            :description @desc}])
-                                                   (re-frame/dispatch [::events/set-active-panel :devices]))]]]]]])))
+                                                   (re-frame/dispatch [::events-request/add-device {:id          id
+                                                                                                    :name        @name
+                                                                                                    :description @desc}])
+                                                   (re-frame/dispatch [::events-common/set-active-panel :devices]))]]]]]])))
 
 (defn grow-mode-panel []
   (let [grow-mode (re-frame/subscribe [::subs/grow-mode])
@@ -267,12 +305,12 @@
                                                                               :style {:align-self "center"}
                                                                               :attr {:on-click (fn []
                                                                                                  (reset! show-popup? false)
-                                                                                                 (re-frame/dispatch [::events/set-grow-mode (assoc @grow-mode key name)]))}]]) variants))]]])]
+                                                                                                 (re-frame/dispatch [::events-common/set-grow-mode (assoc @grow-mode key name)]))}]]) variants))]]])]
     (fn []
       (let [plant (:plant @grow-mode)
             stage (:stage @grow-mode)]
         [v-box :min-height "100vh"
-         :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :device-overview]))
+         :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events-common/set-active-panel :device-overview]))
                              "Режим выращивания"
                              nil])
                     (when @show-popup? (render-select @active-mode-part @variants))
@@ -299,18 +337,33 @@
                                                             [box :style {:align-self "center"}
                                                              :child [title :level :level3 :label stage]]]]]]]]]]))))
 
+(defn grow-mode-info []
+  (let [grow-mode (re-frame/subscribe [::subs/grow-mode])]
+    [border :border "none" :b-border "1px solid lightgrey"
+     :child [h-box
+             :children [(icon "grow")
+                        [box :size "1" :style {:align-self "center"}
+                         :child [v-box :padding "10px"
+                                 :children [[title :level :level3
+                                             :label "Режим выращивания"]
+                                            [title :level :level4 :margin-top "" :style {:font-weight "10"}
+                                             :label (str (:plant @grow-mode) " > " (:stage @grow-mode))]]]]
+                        [box :padding "10px"
+                         :child [row-button :md-icon-name "zmdi-tune" :mouse-over-row? true
+                                 :on-click #(re-frame/dispatch [::events-common/set-active-panel :grow-mode])]]]]]))
+
 (defn device-overview-panel []
-  (let [grow-mode (re-frame/subscribe [::subs/grow-mode])
-        devices (re-frame/subscribe [::subs/devices])
+  (let [devices (re-frame/subscribe [::subs/devices])
         device-id (re-frame/subscribe [::subs/active-device])
+        schedule-rules (re-frame/subscribe [::subs/schedule-rules])
         name (:name (get @devices @device-id))
         desc (:desc (get @devices @device-id))
         id (:id (get @devices @device-id))
         funcs (re-frame/subscribe [::subs/funcs])]
     [v-box :min-height "100vh"
-     :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :devices]))
+     :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events-common/set-active-panel :devices]))
                          "Управление"
-                         (header-action "zmdi-refresh" #(re-frame/dispatch [::events/planter-get-stats]))])
+                         (header-action "zmdi-refresh" #(re-frame/dispatch [::events-rpc/planter-get-stats]))])
                 [box :size "1"
                  :child [v-box
                          :children [[box :padding "10px" :style {:background "rgba(0, 0, 0, 0.1)"}
@@ -318,25 +371,16 @@
                                              :children [[title :level :level2 :label name :style {:align-self "center"}]
                                                         [title :level :level3 :label desc :style {:align-self "center"}]
                                                         [title :level :level4 :label id :style {:align-self "center"}]]]]
-                                    [border :border "none" :b-border "1px solid lightgrey"
-                                     :child [h-box
-                                             :children [(icon "grow")
-                                                        [box :size "1" :style {:align-self "center"}
-                                                         :child [v-box :padding "10px"
-                                                                 :children [[title :level :level3
-                                                                             :label "Режим выращивания"]
-                                                                            [title :level :level4 :margin-top "" :style {:font-weight "10"}
-                                                                             :label (str (:plant @grow-mode) " > " (:stage @grow-mode))]]]]
-                                                        [box :padding "10px"
-                                                         :child [row-button :md-icon-name "zmdi-tune" :mouse-over-row? true
-                                                                 :on-click #(re-frame/dispatch [::events/set-active-panel :grow-mode])]]]]]
-                                    (when (seq @funcs) [func-list])]]]
+                                    [grow-mode-info]
+                                    (when (seq @funcs) [func-list])
+                                    [gap :size "5px" :class "divider"]
+                                    (when (seq @schedule-rules) [schedule-list :all])]]]
                 [box :padding "10px"
                  :child [v-box :gap "10px"
                          :children [[button :label "Удалить устройство" :class "btn-block btn-danger"
                                      :on-click (fn []
-                                                 (re-frame/dispatch [::events/remove-device @device-id])
-                                                 (re-frame/dispatch [::events/set-active-panel :devices]))]]]]]]))
+                                                 (re-frame/dispatch [::events-request/remove-device @device-id])
+                                                 (re-frame/dispatch [::events-common/set-active-panel :devices]))]]]]]]))
 
 (defn captcha-panel [data]
   (let [script-id "recaptcha-script"]
@@ -357,7 +401,7 @@
        :reagent-render
                                (fn []
                                  [v-box :min-height "100vh"
-                                  :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :register]))
+                                  :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events-common/set-active-panel :register]))
                                                       "Регистрация"
                                                       nil])
                                              [box :padding "10px" :justify :center :size "1"
@@ -368,7 +412,7 @@
                                              [box :padding "10px"
                                               :child [v-box :gap "10px"
                                                       :children [[button :label "Отправить" :class "btn-block"
-                                                                  :on-click #(re-frame/dispatch [::events/register-click data])]]]]]])})))
+                                                                  :on-click #(re-frame/dispatch [::events-ui/register-click data])]]]]]])})))
 
 (defn register-panel []
   (let [first-name (r/atom "")
@@ -378,7 +422,7 @@
         pass-again (r/atom "")]
     (fn []
       [v-box :min-height "100vh"
-       :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events/set-active-panel :login]))
+       :children [(header [(header-action "zmdi-chevron-left" #(re-frame/dispatch [::events-common/set-active-panel :login]))
                            "Регистрация"
                            nil])
                   [box :padding "10px" :justify :center :size "1"
@@ -409,10 +453,10 @@
                   [box :padding "10px"
                    :child [v-box :gap "10px"
                            :children [[button :label "Продолжить" :class "btn-block"
-                                       :on-click #(re-frame/dispatch [::events/set-active-panel :captcha {:first-name @first-name
-                                                                                                          :last-name  @last-name
-                                                                                                          :email      @email
-                                                                                                          :pass       @pass}])]]]]]])))
+                                       :on-click #(re-frame/dispatch [::events-common/set-active-panel :captcha {:first-name @first-name
+                                                                                                                 :last-name  @last-name
+                                                                                                                 :email      @email
+                                                                                                                 :pass       @pass}])]]]]]])))
 
 (defn login-panel []
   (let [email (r/atom "farm@ecolog.io")
@@ -434,9 +478,9 @@
                   [box :padding "10px"
                    :child [v-box :gap "10px"
                            :children [[button :label "Вход" :class "btn-block btn-info"
-                                       :on-click #(re-frame/dispatch [::events/request-token {:email @email :password @password}])]
+                                       :on-click #(re-frame/dispatch [::events-request/token {:email @email :password @password}])]
                                       [button :label "Регистрация" :class "btn-block"
-                                       :on-click #(re-frame/dispatch [::events/set-active-panel :register])]]]]]])))
+                                       :on-click #(re-frame/dispatch [::events-common/set-active-panel :register])]]]]]])))
 
 (defn app []
   (let [active (re-frame/subscribe [::subs/active-panel])
@@ -457,7 +501,7 @@
         :register [register-panel]
         :captcha [captcha-panel @panel-data]
         :devices (do
-                   (re-frame/dispatch [::events/request-devices])
+                   (re-frame/dispatch [::events-request/devices])
                    [devices-panel])
         :add-device [edit-device-panel]
         :edit-device [edit-device-panel (get @devices @active-device)]

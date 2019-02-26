@@ -53,6 +53,7 @@
    :devices {}
    :funcs nil
    :user nil
+   :schedule nil
    :events (id-map [(timer "Полдень"
                            true
                            "switch#13"

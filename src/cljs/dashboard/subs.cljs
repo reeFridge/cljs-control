@@ -1,16 +1,17 @@
 (ns dashboard.subs
   (:require
-   [re-frame.core :as re-frame]))
+    [re-frame.core :as re-frame]
+    [clojure.string :as str]))
 
 (re-frame/reg-sub
- ::device-name
- (fn [db]
-   (:name (get (:devices db) (:active-device db)))))
+  ::device-name
+  (fn [db]
+    (:name (get (:devices db) (:active-device db)))))
 
 (re-frame/reg-sub
- ::funcs
- (fn [db]
-   (:funcs db)))
+  ::funcs
+  (fn [db]
+    (:funcs db)))
 
 (re-frame/reg-sub
   ::devices
@@ -23,24 +24,24 @@
     (:user db)))
 
 (re-frame/reg-sub
- ::events
- (fn [db [_ id]]
-   (filter (fn [{:keys [func-id]}] (= func-id id)) (vals (:events db)))))
+  ::events
+  (fn [db [_ id]]
+    (filter (fn [{:keys [func-id]}] (= func-id id)) (vals (:events db)))))
 
 (re-frame/reg-sub
- ::events-map
- (fn [db]
-   (:events db)))
+  ::events-map
+  (fn [db]
+    (:events db)))
 
 (re-frame/reg-sub
- ::active-event
- (fn [db]
-   (:active-event db)))
+  ::active-event
+  (fn [db]
+    (:active-event db)))
 
 (re-frame/reg-sub
- ::active-func
- (fn [db _]
-   (:active-func db)))
+  ::active-func
+  (fn [db _]
+    (:active-func db)))
 
 (re-frame/reg-sub
   ::active-device
@@ -48,9 +49,9 @@
     (:active-device db)))
 
 (re-frame/reg-sub
- ::active-panel
- (fn [db _]
-   (:active-panel db)))
+  ::active-panel
+  (fn [db _]
+    (:active-panel db)))
 
 (re-frame/reg-sub
   ::panel-data
@@ -61,6 +62,21 @@
   ::grow-mode
   (fn [db _]
     (:grow-mode db)))
+
+(re-frame/reg-sub
+  ::schedule-rules
+  (fn [{:keys [schedule]} _]
+    (if schedule
+      (let [rules (:rules schedule)]
+        (vec (reduce
+               (fn [result {:keys [params]}]
+                 (concat result
+                         (vec (map
+                                (fn [[time value]] {:time  time
+                                                    :value value
+                                                    :pin   (int (last (str/split (:pin params) #"/")))})
+                                (:intervals params))))) [] rules)))
+      [])))
 
 (re-frame/reg-sub
   ::loading
